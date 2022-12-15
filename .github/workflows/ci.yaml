@@ -40,3 +40,15 @@ jobs:
         SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")
         docker build -t ghcr.io/alfiankan/${{ github.event.repository.name }}:$SHORT_SHA ./languages-app
         docker push ghcr.io/alfiankan/${{ github.event.repository.name }}:$SHORT_SHA
+
+  update_deployment_staging:
+    name: Update staging env
+    needs: build_push
+    runs-on: ubuntu-latest
+    steps:
+    - name: update deployment
+      uses: steebchen/kubectl@v2.0.0
+      with:
+        config: ${{ secrets.KUBE_CONFIG_DATA }}
+        version: v1.21.0
+        command: -n development set image deployment/majelisit-quotes majelisit-quotes=ghcr.io/alfiandra/${{ github.event.repository.name }}:main

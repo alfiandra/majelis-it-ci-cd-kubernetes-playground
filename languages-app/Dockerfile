@@ -5,7 +5,7 @@ COPY . .
 
 RUN go mod tidy
 
-RUN go build -o app ./main.go
+RUN go build -o app .
 
 
 FROM alpine:latest

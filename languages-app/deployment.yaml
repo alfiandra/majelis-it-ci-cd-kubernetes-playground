@@ -34,9 +34,11 @@ spec:
       labels:
         app: languages-app
     spec:
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com
       containers:
       - name: languages-app
-        image: majelis-aiti/languages-app:v2.0.0
+        image: ghcr.io/alfiankan/majelis-it-ci-cd-kubernetes-playground:7002161
         ports:
         - containerPort: 3000
         env:
