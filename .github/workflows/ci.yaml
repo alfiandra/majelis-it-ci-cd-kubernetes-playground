@@ -34,7 +34,7 @@ jobs:
         password: ${{ secrets.GITUB_PAT }}
 
     - name: Inject version
-      run: echo "ENV APP_VERSION=$SHORT_SHA" >> languages-app/Dockerfile
+      run: echo "ENV APP_VERSION=$IMAGE_TAG" >> languages-app/Dockerfile
 
     - name: Build & Push
       run: |
@@ -47,8 +47,6 @@ jobs:
     needs: build_push
     runs-on: ubuntu-latest
     steps:
-    - name: get sha
-      run: $(git rev-parse --short "$GITHUB_SHA") > $GITHUB_OUTPUT
     - name: update deployment
       uses: steebchen/kubectl@v2.0.0
       with:
