@@ -1,5 +1,6 @@
 while true; 
-    do sleep 1; 
-    curl --silent -X GET http://127.0.0.1:53173/search?name=Java&fake_error=true;
+    do sleep 0.2; 
+    curl -X GET http://192.168.49.2:32339/health?name=Java&fake_error=true;
+    echo "\n";
 done
 

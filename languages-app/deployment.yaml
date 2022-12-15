@@ -25,7 +25,12 @@ metadata:
   labels:
     app: languages-app
 spec:
-  replicas: 2
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: languages-app
@@ -38,9 +43,15 @@ spec:
         - name: dockerconfigjson-github-com
       containers:
       - name: languages-app
-        image: ghcr.io/alfiankan/majelis-it-ci-cd-kubernetes-playground:ghcr.io/alfiankan/majelis-it-ci-cd-kubernetes-playground:f33de03
+        image: ghcr.io/alfiankan/majelis-it-ci-cd-kubernetes-playground:8f1e01b
         ports:
         - containerPort: 3000
         env:
           - name: JAEGER_COLLECTOR_HOST
             value: 'http://tempo.default.svc.cluster.local:14268'
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 2
