@@ -51,4 +51,4 @@ jobs:
       with:
         config: ${{ secrets.KUBE_CONFIG_DATA }}
         version: v1.21.0
-        command: -n development set image deployment/majelisit-quotes majelisit-quotes=ghcr.io/alfiandra/${{ github.event.repository.name }}:main
+        command: -n staging kubectl set image deployment/languages-app languages-app=ghcr.io/alfiankan/${{ github.event.repository.name }}:$(git rev-parse --short "$GITHUB_SHA")
