@@ -52,4 +52,4 @@ jobs:
       with:
         config: ${{ secrets.KUBE_CONFIG_DATA }}
         version: v1.21.0
-        command: -n staging set image deployment/languages-app languages-app=ghcr.io/alfiankan/${{ github.event.repository.name }}:${{ env.GITHUB_SHA }}
+        command: -n staging set image deployment/languages-app languages-app=ghcr.io/alfiankan/${{ github.event.repository.name }}:"$GITHUB_SHA"
