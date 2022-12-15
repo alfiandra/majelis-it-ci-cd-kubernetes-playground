@@ -10,8 +10,10 @@ jobs:
     name: Testing
     runs-on: ubuntu-latest
     steps:
+    - name: chdir to project
+      run: cd languages-app
     - name: unit testing
-      run: JAEGER_COLLECTOR_HOST=http://fake-tracer.local && go test -v -timeout=0
+      run: JAEGER_COLLECTOR_HOST=http://fake-tracer.local &&  go test -v -timeout=0
 
   build_push:
     name: Build & Push Image
