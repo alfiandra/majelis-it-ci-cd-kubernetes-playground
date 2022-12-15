@@ -5,9 +5,6 @@ on:
   push:
     branches: ['main']
 
-env:
-  IMAGE_TAG: main
-
 jobs:
   tests:
     name: Testing
@@ -34,13 +31,12 @@ jobs:
         password: ${{ secrets.GITUB_PAT }}
 
     - name: Inject version
-      run: echo "ENV APP_VERSION=$IMAGE_TAG" >> languages-app/Dockerfile
+      run: echo "ENV APP_VERSION=$GITHUB_SHA" >> languages-app/Dockerfile
 
     - name: Build & Push
       run: |
-        IMAGE_TAG=$(git rev-parse --short "$GITHUB_SHA")
-        docker build -t ghcr.io/alfiankan/${{ github.event.repository.name }}:$IMAGE_TAG ./languages-app
-        docker push ghcr.io/alfiankan/${{ github.event.repository.name }}:$IMAGE_TAG
+        docker build -t ghcr.io/alfiankan/${{ github.event.repository.name }}:"$GITHUB_SHA" ./languages-app
+        docker push ghcr.io/alfiankan/${{ github.event.repository.name }}:"$GITHUB_SHA"
 
   update_deployment_staging:
     name: Update staging env
