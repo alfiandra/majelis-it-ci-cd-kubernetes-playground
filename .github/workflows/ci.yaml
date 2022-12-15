@@ -29,7 +29,6 @@ jobs:
         password: ${{ secrets.GITUB_PAT }}
 
     - name: inject version
-      env:
       run: echo "ENV APP_VERSION=$(git rev-parse --short "$GITHUB_SHA")" >> languages-app/Dockerfile
 
     - name: Build & Push
