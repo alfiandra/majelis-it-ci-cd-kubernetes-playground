@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -12,14 +11,7 @@ import (
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
-
-	"go.opentelemetry.io/otel/sdk/resource"
-	trace2 "go.opentelemetry.io/otel/sdk/trace"
 )
 
 const (
@@ -31,37 +23,7 @@ const (
 
 var APP_VERSION = os.Getenv("APP_VERSION")
 
-func Logger(ctx context.Context, level, message any) {
-	log.Printf("level=%s traceid=%v message=%v", level, ctx.Value("traceid").(string), message)
-}
-
-func InitTracing() *trace2.TracerProvider {
-
-	resource := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.ServiceNameKey.String(APP_NAME),
-		semconv.ServiceVersionKey.String(APP_VERSION),
-	)
-
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(fmt.Sprintf("%s/api/traces", os.Getenv("JAEGER_COLLECTOR_HOST")))))
-	if err != nil {
-		log.Fatal(err)
-	}
-	tracingProvider := trace2.NewTracerProvider(
-		trace2.WithBatcher(exp),
-		trace2.WithResource(resource),
-	)
-
-	return tracingProvider
-}
-
-func TraceError(span trace.Span, err error) {
-	defer span.End()
-	span.RecordError(err)
-	span.SetStatus(codes.Error, err.Error())
-}
-
-func getAvailableLanguages(c *fiber.Ctx) error {
+func GetAvailableLanguages(c *fiber.Ctx) error {
 
 	traceIdParent := c.GetReqHeaders()["Traceparent"]
 	propagationHeader := propagation.MapCarrier{}
@@ -82,7 +44,7 @@ func getAvailableLanguages(c *fiber.Ctx) error {
 		return c.Status(500).SendString("Internal Server Error")
 	}
 
-	languages, err := GetLanguageList(ctx, errorInstrumentationFlag)
+	languages, err := GetLanguageList(ctx, "languages.json", errorInstrumentationFlag)
 
 	if err != nil {
 		Logger(ctx, ERROR, err.Error())
@@ -93,10 +55,12 @@ func getAvailableLanguages(c *fiber.Ctx) error {
 	return c.Status(200).JSON(languages)
 }
 
-func GetLanguageList(ctx context.Context, errorInstrumentation bool) (languages []string, err error) {
-	langSourceFile, err := os.ReadFile("languages.json")
+func GetLanguageList(ctx context.Context, path string, errorInstrumentation bool) (languages []string, err error) {
 	ctx, span := otel.Tracer("languages").Start(ctx, "query to database")
 	defer span.End()
+
+	langSourceFile, err := os.ReadFile(path)
+
 	if err != nil {
 		span.RecordError(err)
 		return
@@ -125,7 +89,7 @@ func main() {
 	prometheus := fiberprometheus.New("languages-service")
 	prometheus.RegisterAt(app, "/metrics")
 
-	app.Get("/v1/languages", prometheus.Middleware, getAvailableLanguages)
+	app.Get("/v1/languages", prometheus.Middleware, GetAvailableLanguages)
 
 	log.Fatal(app.Listen(APP_DEFAULT_PORT))
 
