@@ -1,3 +1,9 @@
+# setup k8s api access
+
+
+# setup ghcr.io image pull secret
+
+
 # Setup Observability 
 
 ## Add helm repo
