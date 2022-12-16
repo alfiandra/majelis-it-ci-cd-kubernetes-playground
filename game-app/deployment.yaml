@@ -2,14 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: game-app
-  labels:
-    app: game-app
-    service: game-app
   annotations:
     prometheus.io/path: "/metrics"
     prometheus.io/port: "5000"
     prometheus.io/scrape: "true"
 spec:
+  type: LoadBalancer
   ports:
     - port: 80
       name: http
@@ -36,7 +34,7 @@ spec:
     spec:
       containers:
         - name: game-app
-          image: majelis-aiti/game-app:v2.0.0
+          image: docker.io/alfiantech/majelistit-gameapp:latest
           env:
             - name: LANGUAGE_APP_HOST
               value: "http://languages-app.default.svc.cluster.local"
