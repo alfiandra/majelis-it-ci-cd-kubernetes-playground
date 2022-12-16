@@ -51,7 +51,7 @@ jobs:
 
 
   update_deployment_production:
-    name: Update staging env
+    name: Update production env
     needs: build_push
     runs-on: ubuntu-latest
     steps:
