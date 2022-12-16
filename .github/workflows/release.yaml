@@ -1,0 +1,68 @@
+name: Release Production
+on:
+  release:
+    types: [published]
+
+jobs:
+  tests:
+    name: Testing
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v3
+    - name: unit testing
+      run: cd languages-app &&  go test -v -timeout=0
+
+  build_push:
+    name: Build & Push Image
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: USERNAME
+          password: ${{ secrets.GITUB_PAT }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ghcr.io/alfiankan/${{ github.event.repository.name }}
+
+      - name: inject version
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.version }}
+        run: |
+          echo "ENV APP_VERSION=$IMAGE_TAG" >> languages-app/Dockerfile
+          cat languages-app/Dockerfile
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./languages-app
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+
+  update_deployment_production:
+    name: Update staging env
+    needs: build_push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ghcr.io/alfiankan/${{ github.event.repository.name }}
+    - name: update deployment
+      uses: steebchen/kubectl@v2.0.0
+      with:
+        config: ${{ secrets.KUBE_CONFIG_DATA }}
+        version: v1.21.0
+        command: -n production set image deployment/languages-app languages-app=ghcr.io/alfiankan/${{ github.event.repository.name }}:${{ steps.meta.outputs.version }}
