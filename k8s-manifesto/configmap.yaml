@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gameapp-config
+data:
+  database_name: "midnights"
+  language_service_host: "user.svc.cluster.local"
