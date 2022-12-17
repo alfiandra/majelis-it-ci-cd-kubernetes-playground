@@ -39,7 +39,10 @@ spec:
             - name: LANGUAGE_APP_HOST
               value: "http://languages-app.default.svc.cluster.local"
             - name: JAEGER_COLLECTOR_HOST
-              value: 'http://tempo.default.svc.cluster.local:14268'
+              valueFrom:
+                configMapKeyRef:
+                  name: my-config
+                  key: JAEGER_COLLECTOR_HOST
           ports:
             - containerPort: 5000
 
