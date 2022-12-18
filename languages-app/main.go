@@ -93,7 +93,7 @@ func main() {
 	app.Get("/v1/languages", prometheus.Middleware, GetAvailableLanguages)
 
 	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(200).SendString(fmt.Sprintf("Application Version %s \n", APP_VERSION))
+		return c.Status(200).SendString(fmt.Sprintf("Version %s \n", APP_VERSION))
 	})
 
 	log.Fatal(app.Listen(APP_DEFAULT_PORT))
